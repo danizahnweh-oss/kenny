@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vocabulary Chase - Elite Pursuit</title>
+    <title>Vocabulary Chase - Persistence Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -139,6 +139,14 @@
             cursor: pointer; background: #000; border: 2px solid #fff; padding: 8px;
             z-index: 1000;
         }
+
+        .reset-link {
+            font-size: 8px;
+            color: #666;
+            margin-top: 20px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center">
@@ -149,14 +157,16 @@
     <div id="start-screen" class="screen active text-center">
         <h1 class="text-3xl md:text-5xl mb-10 arcade-text leading-tight">VOCABULARY<br>CHASE</h1>
         <div class="mb-10 text-[10px] md:text-xs space-y-4 max-w-lg">
-            <p>Abitur-Niveau Vokabeltraining</p>
-            <p class="text-blue-400">ESCAPE THE POLICE BY ANSWERING CORRECTLY.</p>
-            <p class="text-red-500">YOU HAVE EXACTLY 5 SECONDS PER QUESTION.</p>
+            <p>Advanced Academic Vocabulary</p>
+            <p class="text-blue-400">NO REPEATS: WORDS ARE TRACKED ACROSS SESSIONS.</p>
+            <p class="text-red-500">EXACTLY 5 SECONDS PER CHALLENGE.</p>
         </div>
-        <div class="mb-10">
+        <div class="mb-6">
             <p class="text-[10px]">RECORD: <span id="display-highscore">0</span></p>
+            <p class="text-[9px] mt-2 text-green-400">PROGRESS: <span id="progress-text">0/0</span> WORDS</p>
         </div>
         <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-6 border-b-8 border-blue-900 active:border-b-0 text-sm">ENGAGE</button>
+        <div class="reset-link" onclick="resetWordProgress()">RESET WORD PROGRESS</div>
     </div>
 
     <!-- SPIELBILDSCHIRM -->
@@ -202,54 +212,76 @@
     </div>
 
     <script>
-        // --- VOKABEL DATENBANK ---
+        // --- VOKABEL DATENBANK (Kombiniert aus beiden Dateien) ---
         const vocabularyDB = [
-            { q: "What is the English term for 'Pressekonferenz'?", a: "press conference", d: ["media briefing", "news session", "print report"], type: "translation" },
-            { q: "To be present at or go to (an event/school):", a: "to attend", d: ["to visit", "to watch", "to expect"], type: "meaning" },
-            { q: "Which verb means to provide money for a specific purpose?", a: "to fund", d: ["to found", "to find", "to fix"], type: "meaning" },
-            { q: "The process of absorbing into a dominant culture:", a: "to assimilate", d: ["to isolate", "to differentiate", "to exclude"], type: "meaning" },
-            { q: "Translate 'Völkermord' into English:", a: "genocide", d: ["homicide", "suicide", "infanticide"], type: "translation" },
-            { q: "The Christian faith / Christentum:", a: "Christianity", d: ["Christness", "Christendom", "Christianing"], type: "meaning" },
-            { q: "A formal agreement between states or nations:", a: "treaty", d: ["law", "contract", "pact"], type: "meaning" },
-            { q: "Meaning: Noticeable or important (e.g. change):", a: "significant", d: ["slight", "trivial", "random"], type: "meaning" },
-            { q: "Translate: 'beträchtlich; erheblich'", a: "substantial", d: ["minor", "minimal", "fragile"], type: "translation" },
-            { q: "To perform an act, typically a crime or a sin:", a: "to commit", d: ["to permit", "to admit", "to submit"], type: "meaning" },
-            { q: "Translate: 'ausrotten; vernichten'", a: "to exterminate", d: ["to exclude", "to explore", "to exist"], type: "translation" },
-            { q: "Information proving whether a belief is true:", a: "evidence", d: ["rumor", "theory", "opinion"], type: "meaning" },
-            { q: "To be worthy of something due to actions:", a: "to deserve", d: ["to desire", "to serve", "to design"], type: "meaning" },
-            { q: "A statement expressing regret for a fault:", a: "apology", d: ["excuse", "reason", "feeling"], type: "meaning" },
-            { q: "Feeling or showing thanks:", a: "grateful", d: ["great", "graceful", "greedy"], type: "meaning" },
-            { q: "To carry out an activity or a study:", a: "to conduct", d: ["to connect", "to conclude", "to confuse"], type: "meaning" },
-            { q: "Translate: 'beharren; bleiben'", a: "to persist", d: ["to resist", "to exist", "to consist"], type: "translation" },
-            { q: "To move a vehicle in a certain direction:", a: "to steer", d: ["to stare", "to stay", "to step"], type: "meaning" },
-            { q: "Meaning: Irritated and frustrated to a high degree:", a: "exasperated", d: ["exhausted", "excited", "exaggerated"], type: "meaning" },
-            { q: "A dark mark on skin caused by a hit:", a: "bruise", d: ["break", "blood", "burn"], type: "meaning" },
-            { q: "To cry with noisy, short breaths:", a: "to sob", d: ["to sigh", "to sing", "to smile"], type: "meaning" },
-            { q: "Translate: 'beschämend; schändlich'", a: "shameful", d: ["shadowy", "famous", "shaking"], type: "translation" }
+            // Vocab graves
+            { id: 0, q: "Translate 'Pressekonferenz':", a: "press conference", d: ["media briefing", "news session", "print report"] },
+            { id: 1, q: "To participate in or be present at an event/school:", a: "to attend", d: ["to visit", "to watch", "to expect"] },
+            { id: 2, q: "To provide financial support for a project/cause:", a: "to fund", d: ["to found", "to find", "to fix"] },
+            { id: 3, q: "To integrate or absorb into a dominant culture:", a: "to assimilate", d: ["to isolate", "to differentiate", "to exclude"] },
+            { id: 4, q: "The act of converting to another faith:", a: "to convert", d: ["to connect", "to convince", "to conduct"] },
+            { id: 5, q: "The Christian faith / Christentum:", a: "Christianity", d: ["Christness", "Christendom", "Christianing"] },
+            { id: 6, q: "The act of deliberately killing oneself:", a: "suicide", d: ["homicide", "genocide", "pesticide"] },
+            { id: 7, q: "Noticeable, important, or meaningful (e.g. rise):", a: "significant", d: ["slight", "trivial", "random"] },
+            { id: 8, q: "Large in amount, value, or importance:", a: "substantial", d: ["minor", "minimal", "fragile"] },
+            { id: 9, q: "The killing of a large group of people (ethnic/national):", a: "genocide", d: ["homicide", "suicide", "infanticide"] },
+            { id: 10, q: "To perform an act, typically a crime or error:", a: "to commit", d: ["to permit", "to admit", "to submit"] },
+            { id: 11, q: "A formal and binding agreement between states:", a: "treaty", d: ["contract", "policy", "pact"] },
+            { id: 12, q: "To destroy or kill completely (e.g. rats):", a: "to exterminate", d: ["to exclude", "to explore", "to exist"] },
+            { id: 13, q: "Information proving whether a belief is true:", a: "evidence", d: ["rumor", "theory", "opinion"] },
+            { id: 14, q: "To be worthy of something due to actions:", a: "to deserve", d: ["to desire", "to serve", "to design"] },
+            { id: 15, q: "A statement expressing regret for a mistake:", a: "apology", d: ["excuse", "reason", "feeling"] },
+            { id: 16, q: "Feelings of pity and sorrow for someone else:", a: "sympathy", d: ["empathy", "apathy", "happiness"] },
+            { id: 17, q: "Feeling or showing thanks; appreciative:", a: "grateful", d: ["graceful", "greedy", "great"] },
+            { q: "To say what will happen in the future:", a: "to predict", d: ["to present", "to prepare", "to prevent"], id: 18 },
+            { q: "To make something publicly or formally known:", a: "to announce", d: ["to accept", "to allow", "to answer"], id: 19 },
+            { q: "To carry out an activity, study, or task:", a: "to conduct", d: ["to connect", "to conclude", "to confuse"], id: 20 },
+            { q: "To continue to exist or be in a certain state:", a: "to persist", d: ["to resist", "to consist", "to exist"], id: 21 },
+            { q: "Addiction to alcoholic drinks:", a: "alcoholism", d: ["drinkism", "liquorism", "bottleism"], id: 22 },
+            { q: "Physical dependence on illegal substances:", a: "drug addiction", d: ["drug habit", "drug use", "drug need"], id: 23 },
+            { q: "The power or right to give orders:", a: "authority", d: ["autonomy", "influence", "standard"], id: 24 },
+            
+            // Vocab Kenny
+            { id: 25, q: "To control the direction of a vehicle:", a: "to steer", d: ["to stare", "to stay", "to step"] },
+            { id: 26, q: "Intensely irritated or frustrated:", a: "exasperated", d: ["exhausted", "excited", "exaggerated"] },
+            { id: 27, q: "A mark on skin caused by a hit or pressure:", a: "bruise", d: ["break", "blood", "burn"] },
+            { id: 28, q: "To put paper or cloth around something:", a: "to wrap", d: ["to rip", "to write", "to trap"] },
+            { id: 29, q: "To cry with short, gasping breaths:", a: "to sob", d: ["to sigh", "to sing", "to smile"] },
+            { id: 30, q: "To move gently back and forth or from side to side:", a: "to rock", d: ["to roll", "to run", "to rest"] },
+            { id: 31, q: "Worthy of disgrace; extremely embarrassing:", a: "shameful", d: ["shadowy", "famous", "shaking"] }
         ];
 
         // --- SPIEL VARIABLEN ---
         let score = 0;
         let highscore = localStorage.getItem('vocaChaseHighscore') || 0;
+        let usedIds = JSON.parse(localStorage.getItem('vocaUsedIds')) || [];
         let isMuted = false;
         let gameActive = false;
         
-        // Timer Variablen
         let startTime = 0;
-        const DURATION = 5000; // 5 Sekunden
+        const DURATION = 5000;
         let animationFrameId = null;
 
-        // Positionen (in %)
         const POLICE_START_X = 5;
-        const TARGET_X = 80; // Dort ist das Motorrad
+        const TARGET_X = 80;
 
-        // Audio Kontext
         let audioCtx = null;
         let masterGain = null;
 
         // --- CORE FUNCTIONS ---
         function init() {
             document.getElementById('display-highscore').innerText = highscore;
+            updateProgressText();
+        }
+
+        function updateProgressText() {
+            document.getElementById('progress-text').innerText = `${usedIds.length}/${vocabularyDB.length}`;
+        }
+
+        function resetWordProgress() {
+            usedIds = [];
+            localStorage.setItem('vocaUsedIds', JSON.stringify([]));
+            updateProgressText();
         }
 
         function showScreen(id) {
@@ -268,7 +300,22 @@
         }
 
         function nextQuestion() {
-            const q = vocabularyDB[Math.floor(Math.random() * vocabularyDB.length)];
+            // Filter für noch nicht genutzte Vokabeln
+            let available = vocabularyDB.filter(item => !usedIds.includes(item.id));
+            
+            // Wenn alle genutzt wurden, Stapel neu mischen
+            if (available.length === 0) {
+                usedIds = [];
+                available = [...vocabularyDB];
+            }
+
+            const q = available[Math.floor(Math.random() * available.length)];
+            
+            // ID als benutzt markieren und speichern
+            usedIds.push(q.id);
+            localStorage.setItem('vocaUsedIds', JSON.stringify(usedIds));
+            updateProgressText();
+
             document.getElementById('question-text').innerText = q.q;
             
             const options = [...q.d, q.a];
@@ -307,17 +354,13 @@
             const elapsed = now - startTime;
             const progress = Math.min(elapsed / DURATION, 1);
 
-            // 1. Timer Balken Update
             const timerBar = document.getElementById('timer-bar');
             timerBar.style.transform = `scaleX(${1 - progress})`;
             
-            // Farben: Grün -> Gelb -> Rot
             if (progress < 0.5) timerBar.style.background = '#00ff00';
             else if (progress < 0.8) timerBar.style.background = '#ffff00';
             else timerBar.style.background = '#ff0000';
 
-            // 2. Polizei Bewegung (Lineare Annäherung)
-            // Start: 5%, Ende: 80% (Crash)
             const currentPoliceX = POLICE_START_X + (TARGET_X - POLICE_START_X) * progress;
             document.getElementById('police-car').style.left = currentPoliceX + '%';
 
@@ -376,11 +419,10 @@
             masterGain.connect(audioCtx.destination);
             masterGain.gain.value = 0.08;
             
-            // Bass Loop
             setInterval(() => {
                 if (gameActive) {
-                    playNote(82.41, 'triangle', 0.15, 0.5); // E
-                    setTimeout(() => playNote(73.42, 'triangle', 0.1, 0.3), 200); // D
+                    playNote(82.41, 'triangle', 0.15, 0.5); 
+                    setTimeout(() => playNote(73.42, 'triangle', 0.1, 0.3), 200); 
                 }
             }, 400);
         }
