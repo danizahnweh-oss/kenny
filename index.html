@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vocabulary Chase - Persistence Edition</title>
+    <title>Vocabulary Chase - Elite Academic Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --retro-font: 'Press Start 2P', cursive;
@@ -26,7 +27,6 @@
             text-shadow: 3px 3px #ff0000, -2px -2px #0000ff;
         }
 
-        /* Animierte Retro-Straße */
         .road {
             position: relative;
             height: 160px;
@@ -55,7 +55,6 @@
             animation-play-state: paused;
         }
 
-        /* Fahrzeug-Styling */
         .chase-lane {
             position: relative;
             width: 100%;
@@ -73,10 +72,9 @@
             will-change: left;
         }
 
-        #police-car { left: 0%; }
+        #police-car { left: 5%; }
         #player-bike { left: 80%; }
 
-        /* UI Komponenten */
         .game-card {
             background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
             border: 4px solid #fff;
@@ -86,17 +84,18 @@
         .btn-option {
             background: #222;
             border: 2px solid #555;
-            padding: 1.2rem;
-            text-align: center;
-            font-size: 0.65rem;
+            padding: 0.8rem;
+            text-align: left;
+            font-size: 0.6rem;
             transition: all 0.1s ease;
             cursor: pointer;
             border-radius: 4px;
-            min-height: 80px;
+            min-height: 90px;
             display: flex;
             align-items: center;
-            justify-content: center;
             line-height: 1.4;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 600;
         }
 
         .btn-option:active {
@@ -106,11 +105,11 @@
         }
 
         .timer-container {
-            height: 24px;
+            height: 14px;
             background: #333;
             border: 2px solid #fff;
             width: 100%;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             position: relative;
             overflow: hidden;
         }
@@ -140,39 +139,38 @@
             z-index: 1000;
         }
 
-        .reset-link {
-            font-size: 8px;
-            color: #666;
-            margin-top: 20px;
-            cursor: pointer;
-            text-decoration: underline;
+        .pdf-btn {
+            position: fixed; bottom: 20px; right: 20px; font-size: 8px;
+            cursor: pointer; background: #111; color: #666; padding: 10px;
+            border: 1px solid #444; border-radius: 4px; z-index: 1000;
         }
+        .pdf-btn:hover { color: #fff; border-color: #fff; }
     </style>
 </head>
 <body class="flex items-center justify-center">
 
     <div id="audio-toggle" onclick="toggleAudio()">🔊 AUDIO: ON</div>
 
-    <!-- STARTBILDSCHIRM -->
+    <!-- START SCREEN -->
     <div id="start-screen" class="screen active text-center">
-        <h1 class="text-3xl md:text-5xl mb-10 arcade-text leading-tight">VOCABULARY<br>CHASE</h1>
-        <div class="mb-10 text-[10px] md:text-xs space-y-4 max-w-lg">
-            <p>Advanced Academic Vocabulary</p>
-            <p class="text-blue-400">NO REPEATS: WORDS ARE TRACKED ACROSS SESSIONS.</p>
-            <p class="text-red-500">EXACTLY 5 SECONDS PER CHALLENGE.</p>
+        <h1 class="text-2xl md:text-5xl mb-8 arcade-text leading-tight">VOCABULARY<br>CHASE</h1>
+        <div class="mb-8 text-[9px] md:text-xs space-y-4 max-w-2xl px-4 leading-relaxed">
+            <p>Advanced Academic Pursuit: British Empire, South Africa, and Canada Modules.</p>
+            <p class="text-blue-400 uppercase">Adaptive Speed: Starts at 10s, accelerates to 4s as you level up.</p>
+            <p class="text-green-400 uppercase">System: Your progress is tracked. No repeated terms.</p>
         </div>
         <div class="mb-6">
-            <p class="text-[10px]">RECORD: <span id="display-highscore">0</span></p>
-            <p class="text-[9px] mt-2 text-green-400">PROGRESS: <span id="progress-text">0/0</span> WORDS</p>
+            <p class="text-[10px]">HIGHSCORE: <span id="display-highscore">0</span></p>
+            <p class="text-[9px] mt-2 text-green-400">SESSION MASTERY: <span id="progress-text">0/0</span> TERMS</p>
         </div>
-        <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-6 border-b-8 border-blue-900 active:border-b-0 text-sm">ENGAGE</button>
-        <div class="reset-link" onclick="resetWordProgress()">RESET WORD PROGRESS</div>
+        <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-6 border-b-8 border-blue-900 active:border-b-0 text-sm">LAUNCH SESSION</button>
+        <div class="mt-8 text-[8px] text-gray-600 cursor-pointer underline" onclick="resetProgress()">Clear learning history</div>
     </div>
 
-    <!-- SPIELBILDSCHIRM -->
+    <!-- GAME SCREEN -->
     <div id="game-screen" class="screen">
         <div class="w-full max-w-5xl">
-            <div class="road mb-8 rounded-lg" id="road-element">
+            <div class="road mb-6 rounded-lg" id="road-element">
                 <div class="road-lines"></div>
                 <div class="chase-lane">
                     <div id="police-car" class="vehicle">🚓</div>
@@ -182,27 +180,28 @@
 
             <div class="flex justify-between items-end mb-4 px-2">
                 <div class="text-[9px] text-green-400">SCORE: <span id="current-score">0</span></div>
-                <div class="text-[9px] text-yellow-400">LEVEL: <span id="current-level">1</span></div>
+                <div class="text-[9px] text-yellow-400">TIME: <span id="current-duration-display">10.0</span>s</div>
+                <div class="text-[9px] text-blue-400">LVL: <span id="current-level">1</span></div>
             </div>
 
-            <div class="game-card p-6 md:p-10">
+            <div class="game-card p-4 md:p-8">
                 <div class="timer-container">
                     <div id="timer-bar"></div>
                 </div>
-                <div id="question-text" class="text-xs md:text-sm mb-10 leading-relaxed text-center min-h-[80px] flex items-center justify-center px-4">
-                    Ready?
+                <div id="question-text" class="text-xs md:text-sm mb-6 leading-relaxed text-center min-h-[100px] flex items-center justify-center px-4">
+                    Connecting to database...
                 </div>
-                <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             </div>
         </div>
     </div>
 
-    <!-- GAME OVER -->
+    <!-- GAME OVER SCREEN -->
     <div id="game-over-screen" class="screen text-center">
         <h1 class="text-5xl text-red-600 mb-8 arcade-text">BUSTED!</h1>
         <div class="game-card p-10 mb-10 w-full max-w-md">
-            <p class="mb-6 text-sm">FINAL SCORE: <span id="final-score" class="text-green-400">0</span></p>
-            <p id="game-over-reason" class="text-red-400 text-[10px] leading-relaxed"></p>
+            <p class="mb-4 text-sm">SCORE: <span id="final-score" class="text-green-400">0</span></p>
+            <p id="game-over-reason" class="text-red-400 text-[9px] leading-relaxed"></p>
         </div>
         <button onclick="restartGame()" class="bg-white text-black px-12 py-6 hover:bg-gray-200 text-sm">REBOOT</button>
     </div>
@@ -211,55 +210,50 @@
         <h2 class="text-4xl text-white arcade-text">CAUGHT!</h2>
     </div>
 
+    <div class="pdf-btn" onclick="downloadPDF()">GENERATE STUDENT NOTES (PDF)</div>
+
     <script>
-        // --- VOKABEL DATENBANK (Kombiniert aus beiden Dateien) ---
+        // --- COMPREHENSIVE VOCABULARY DATABASE ---
         const vocabularyDB = [
-            // Vocab graves
-            { id: 0, q: "Translate 'Pressekonferenz':", a: "press conference", d: ["media briefing", "news session", "print report"] },
-            { id: 1, q: "To participate in or be present at an event/school:", a: "to attend", d: ["to visit", "to watch", "to expect"] },
-            { id: 2, q: "To provide financial support for a project/cause:", a: "to fund", d: ["to found", "to find", "to fix"] },
-            { id: 3, q: "To integrate or absorb into a dominant culture:", a: "to assimilate", d: ["to isolate", "to differentiate", "to exclude"] },
-            { id: 4, q: "The act of converting to another faith:", a: "to convert", d: ["to connect", "to convince", "to conduct"] },
-            { id: 5, q: "The Christian faith / Christentum:", a: "Christianity", d: ["Christness", "Christendom", "Christianing"] },
-            { id: 6, q: "The act of deliberately killing oneself:", a: "suicide", d: ["homicide", "genocide", "pesticide"] },
-            { id: 7, q: "Noticeable, important, or meaningful (e.g. rise):", a: "significant", d: ["slight", "trivial", "random"] },
-            { id: 8, q: "Large in amount, value, or importance:", a: "substantial", d: ["minor", "minimal", "fragile"] },
-            { id: 9, q: "The killing of a large group of people (ethnic/national):", a: "genocide", d: ["homicide", "suicide", "infanticide"] },
-            { id: 10, q: "To perform an act, typically a crime or error:", a: "to commit", d: ["to permit", "to admit", "to submit"] },
-            { id: 11, q: "A formal and binding agreement between states:", a: "treaty", d: ["contract", "policy", "pact"] },
-            { id: 12, q: "To destroy or kill completely (e.g. rats):", a: "to exterminate", d: ["to exclude", "to explore", "to exist"] },
-            { id: 13, q: "Information proving whether a belief is true:", a: "evidence", d: ["rumor", "theory", "opinion"] },
-            { id: 14, q: "To be worthy of something due to actions:", a: "to deserve", d: ["to desire", "to serve", "to design"] },
-            { id: 15, q: "A statement expressing regret for a mistake:", a: "apology", d: ["excuse", "reason", "feeling"] },
-            { id: 16, q: "Feelings of pity and sorrow for someone else:", a: "sympathy", d: ["empathy", "apathy", "happiness"] },
-            { id: 17, q: "Feeling or showing thanks; appreciative:", a: "grateful", d: ["graceful", "greedy", "great"] },
-            { q: "To say what will happen in the future:", a: "to predict", d: ["to present", "to prepare", "to prevent"], id: 18 },
-            { q: "To make something publicly or formally known:", a: "to announce", d: ["to accept", "to allow", "to answer"], id: 19 },
-            { q: "To carry out an activity, study, or task:", a: "to conduct", d: ["to connect", "to conclude", "to confuse"], id: 20 },
-            { q: "To continue to exist or be in a certain state:", a: "to persist", d: ["to resist", "to consist", "to exist"], id: 21 },
-            { q: "Addiction to alcoholic drinks:", a: "alcoholism", d: ["drinkism", "liquorism", "bottleism"], id: 22 },
-            { q: "Physical dependence on illegal substances:", a: "drug addiction", d: ["drug habit", "drug use", "drug need"], id: 23 },
-            { q: "The power or right to give orders:", a: "authority", d: ["autonomy", "influence", "standard"], id: 24 },
-            
-            // Vocab Kenny
-            { id: 25, q: "To control the direction of a vehicle:", a: "to steer", d: ["to stare", "to stay", "to step"] },
-            { id: 26, q: "Intensely irritated or frustrated:", a: "exasperated", d: ["exhausted", "excited", "exaggerated"] },
-            { id: 27, q: "A mark on skin caused by a hit or pressure:", a: "bruise", d: ["break", "blood", "burn"] },
-            { id: 28, q: "To put paper or cloth around something:", a: "to wrap", d: ["to rip", "to write", "to trap"] },
-            { id: 29, q: "To cry with short, gasping breaths:", a: "to sob", d: ["to sigh", "to sing", "to smile"] },
-            { id: 30, q: "To move gently back and forth or from side to side:", a: "to rock", d: ["to roll", "to run", "to rest"] },
-            { id: 31, q: "Worthy of disgrace; extremely embarrassing:", a: "shameful", d: ["shadowy", "famous", "shaking"] }
+            // Format 1: Question = Sentence with blank, Answers = Single Words
+            // Format 2: Question = Single Word with colon, Answers = Full sentences/explanations
+            { id: 1, type: 1, q: "The British Empire left a significant ________ that still influences global politics today.", a: "legacy", d: ["expansion", "inhabitant", "attempt"] },
+            { id: 2, type: 2, q: "To assimilate:", a: "To absorb and integrate people into the customs and attitudes of a dominant group.", d: ["To set right an unfair situation or to correct a past injustice.", "To move to a new place and establish one's home there.", "To kill animals brutally for food or sport."] },
+            { id: 3, type: 1, q: "Apartheid in South Africa was a notorious system based on racial ________.", a: "segregation", d: ["reconciliation", "prosperity", "inquiry"] },
+            { id: 4, type: 2, q: "Aftermath:", a: "The consequences or aftereffects of a significant or disastrous event.", d: ["The middle value in a set of data arranged in order of size.", "A state of being firm, steady, and not likely to change.", "A long pipe used for carrying oil or gas over long distances."] },
+            { id: 5, type: 1, q: "Nelson Mandela was ________ to stand trial for his role in the anti-apartheid movement.", a: "obliged", d: ["blessed", "determined", "nimble"] },
+            { id: 6, type: 2, q: "Civil disobedience:", a: "The non-violent refusal to obey certain laws as a form of protest.", d: ["The exercise of control or influence over another group of people.", "A strong feeling of hostility, hate, or deep-seated resentment.", "The act of performing a crime, sin, or error."] },
+            { id: 7, type: 1, q: "It is essential to ________ the suffering of marginalized groups in post-colonial societies.", a: "alleviate", d: ["quell", "hire", "dare"] },
+            { id: 8, type: 2, q: "To maintain:", a: "To keep something at a stable, consistent, or constant level.", d: ["To change the form or character of something completely.", "To gather a crop or resource as a reward for labor.", "To cry noisily while taking short, sudden breaths of air."] },
+            { id: 9, type: 1, q: "Indigenous communities often ________ their land rights in court against large industrial projects.", a: "claim", d: ["grant", "collapse", "return"] },
+            { id: 10, type: 2, q: "Inequality:", a: "The unfair difference in status, rights, and opportunities between groups.", d: ["A state of being successful, flourishing, and wealthy.", "An official investigation conducted to determine the facts of a case.", "A formal, legally binding agreement made between sovereign states."] },
+            { id: 11, type: 1, q: "The detective needed more ________ to prove that the suspect was guilty beyond doubt.", a: "evidence", d: ["treaty", "inquiry", "fine"] },
+            { id: 12, type: 2, q: "Exasperated:", a: "Intensely irritated or frustrated to a very high degree.", d: ["Quick and light in movement or action; agile.", "Firmly fixed and not likely to give way or overturn.", "Prepared or ready to do something without pressure."] },
+            { id: 13, type: 1, q: "The government launched an ________ into the disappearance of the ancient artifacts.", a: "inquiry", d: ["reform", "prohibition", "trial"] },
+            { id: 14, type: 2, q: "To quell:", a: "To suppress or crush a rebellion or an uprising by force.", d: ["To arrange or plan something in a clever or tricky way.", "To remedy or set right an undesirable or unfair situation.", "To move from one region or habitat to another, often for work."] },
+            { id: 15, type: 1, q: "Despite the market ________, the entrepreneurs refused to give up on their project.", a: "collapse", d: ["merchant", "timber", "median"] },
+            { id: 16, type: 2, q: "Reconciliation:", a: "The restoration of friendly relations between formerly hostile groups.", d: ["The act of making a territory or business larger.", "The pointless or useless state of a specific action or effort.", "A period of ten years in the history of a nation."] },
+            { id: 17, type: 1, q: "She prides herself on her ________ fingers, which allow her to play the piano perfectly.", a: "nimble", d: ["resistant", "stable", "equal"] },
+            { id: 18, type: 2, q: "To cherish:", a: "To protect and care for something lovingly or to hold it dear.", d: ["To describe someone in a particular way in literature.", "To rush forward suddenly in order to attack someone.", "To be worthy of something due to actions or qualities."] },
+            { id: 19, type: 1, q: "The country ________ a war against its neighbor for nearly a whole decade.", a: "waged", d: ["quelled", "contrived", "redressed"] },
+            { id: 20, type: 2, q: "Expatriate:", a: "A person who lives and works outside their native country.", d: ["A woman whose husband has died and who has not remarried.", "A regular customer or visitor of a theater or restaurant.", "A person who buys and sells goods in large quantities."] },
+            { id: 21, type: 1, q: "The dictator was trying to ________ the revolution by all means necessary.", a: "quell", d: ["maintain", "alleviate", "return"] },
+            { id: 22, type: 2, q: "Prosperous:", a: "Successful in material terms; flourishing financially.", d: ["Happening only a short while ago; very recent.", "Made by human beings rather than occurring naturally.", "Having the ability or power to do something specific."] },
+            { id: 23, type: 1, q: "The Archbishop ________ the mayor as a corrupt and dangerous individual.", a: "portrayed", d: ["negotiated", "classified", "obtained"] },
+            { id: 24, type: 2, q: "Futility:", a: "The pointlessness or uselessness of a specific action or effort.", d: ["The act of becoming larger or more extensive.", "A formal examination of evidence in a court of law.", "An improvement or amendment of what is wrong."] },
+            { id: 25, q: "Translate 'Entschuldigung':", a: "apology", d: ["excuse", "reason", "feeling"], type: 1 },
+            { id: 26, q: "To redress:", a: "To remedy or set right an undesirable or unfair situation.", d: ["To provide money for a specific project or cause.", "To say what will happen in the future.", "To keep something at a steady and consistent level."], type: 2 }
         ];
 
-        // --- SPIEL VARIABLEN ---
+        // --- GAME STATE ---
         let score = 0;
         let highscore = localStorage.getItem('vocaChaseHighscore') || 0;
         let usedIds = JSON.parse(localStorage.getItem('vocaUsedIds')) || [];
+        let mistakeLog = JSON.parse(localStorage.getItem('vocaMistakes')) || [];
         let isMuted = false;
         let gameActive = false;
         
         let startTime = 0;
-        const DURATION = 5000;
         let animationFrameId = null;
 
         const POLICE_START_X = 5;
@@ -268,25 +262,34 @@
         let audioCtx = null;
         let masterGain = null;
 
-        // --- CORE FUNCTIONS ---
-        function init() {
-            document.getElementById('display-highscore').innerText = highscore;
-            updateProgressText();
+        function getCurrentDuration() {
+            const level = Math.floor(score / 1000) + 1;
+            return Math.max(4000, 10000 - (level - 1) * 500);
         }
 
-        function updateProgressText() {
+        function init() {
+            document.getElementById('display-highscore').innerText = highscore;
+            updateProgress();
+        }
+
+        function updateProgress() {
             document.getElementById('progress-text').innerText = `${usedIds.length}/${vocabularyDB.length}`;
         }
 
-        function resetWordProgress() {
+        function resetProgress() {
+            if(!confirm("Are you sure? Highscore remains, but progress clears.")) return;
             usedIds = [];
+            mistakeLog = [];
             localStorage.setItem('vocaUsedIds', JSON.stringify([]));
-            updateProgressText();
+            localStorage.setItem('vocaMistakes', JSON.stringify([]));
+            updateProgress();
+            location.reload();
         }
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id + '-screen').classList.add('active');
+            const target = document.getElementById(id + '-screen');
+            if(target) target.classList.add('active');
         }
 
         function startGame() {
@@ -300,23 +303,19 @@
         }
 
         function nextQuestion() {
-            // Filter für noch nicht genutzte Vokabeln
             let available = vocabularyDB.filter(item => !usedIds.includes(item.id));
-            
-            // Wenn alle genutzt wurden, Stapel neu mischen
             if (available.length === 0) {
                 usedIds = [];
                 available = [...vocabularyDB];
             }
 
             const q = available[Math.floor(Math.random() * available.length)];
-            
-            // ID als benutzt markieren und speichern
             usedIds.push(q.id);
             localStorage.setItem('vocaUsedIds', JSON.stringify(usedIds));
-            updateProgressText();
+            updateProgress();
 
             document.getElementById('question-text').innerText = q.q;
+            document.getElementById('current-duration-display').innerText = (getCurrentDuration()/1000).toFixed(1);
             
             const options = [...q.d, q.a];
             for (let i = options.length - 1; i > 0; i--) {
@@ -330,9 +329,13 @@
                 const btn = document.createElement('button');
                 btn.className = 'btn-option';
                 btn.innerText = opt;
+                // Change font for single word answers to match arcade look, sans-serif for sentences
+                btn.style.fontFamily = opt.split(' ').length > 4 ? 'Segoe UI' : '"Press Start 2P"';
+                btn.style.fontSize = opt.split(' ').length > 4 ? '0.7rem' : '0.5rem';
+
                 btn.onclick = (e) => {
                     e.preventDefault();
-                    if(gameActive) checkAnswer(opt, q.a);
+                    if(gameActive) checkAnswer(opt, q);
                 };
                 grid.appendChild(btn);
             });
@@ -340,7 +343,6 @@
             startTimer();
         }
 
-        // --- TIMER & MOVEMENT ENGINE ---
         function startTimer() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             startTime = performance.now();
@@ -349,10 +351,10 @@
 
         function tick() {
             if (!gameActive) return;
-
             const now = performance.now();
             const elapsed = now - startTime;
-            const progress = Math.min(elapsed / DURATION, 1);
+            const currentDuration = getCurrentDuration();
+            const progress = Math.min(elapsed / currentDuration, 1);
 
             const timerBar = document.getElementById('timer-bar');
             timerBar.style.transform = `scaleX(${1 - progress})`;
@@ -365,29 +367,34 @@
             document.getElementById('police-car').style.left = currentPoliceX + '%';
 
             if (progress >= 1) {
-                gameOver("THE POLICE RAMMED YOUR BIKE! SPEED UP YOUR THINKING.");
+                gameOver("TIMEOUT! THE PURSUIT ENDED IN A BUST.");
             } else {
                 animationFrameId = requestAnimationFrame(tick);
             }
         }
 
-        function checkAnswer(selected, correct) {
-            if (selected === correct) {
+        function checkAnswer(selected, qObj) {
+            if (selected === qObj.a) {
                 playNote(523, 'sine', 0.1); 
                 const now = performance.now();
-                const bonus = Math.floor((DURATION - (now - startTime)) / 50);
+                const currentDuration = getCurrentDuration();
+                const bonus = Math.floor((currentDuration - (now - startTime)) / 50);
                 score += 100 + Math.max(0, bonus);
                 updateScoreUI();
                 nextQuestion();
             } else {
                 playNote(110, 'sawtooth', 0.3); 
-                gameOver("WRONG MOVE! YOU LOST CONTROL OF THE BIKE.");
+                mistakeLog.push({ question: qObj.q, correct: qObj.a });
+                localStorage.setItem('vocaMistakes', JSON.stringify(mistakeLog));
+                gameOver("WRONG OPTION! YOU CRASHED DURING THE CHASE.");
             }
         }
 
         function updateScoreUI() {
             document.getElementById('current-score').innerText = score;
-            document.getElementById('current-level').innerText = Math.floor(score / 1000) + 1;
+            const level = Math.floor(score / 1000) + 1;
+            document.getElementById('current-level').innerText = level;
+            document.getElementById('current-duration-display').innerText = (getCurrentDuration()/1000).toFixed(1);
         }
 
         function gameOver(reason) {
@@ -421,8 +428,8 @@
             
             setInterval(() => {
                 if (gameActive) {
-                    playNote(82.41, 'triangle', 0.15, 0.5); 
-                    setTimeout(() => playNote(73.42, 'triangle', 0.1, 0.3), 200); 
+                    playNote(82, 'triangle', 0.15, 0.4); 
+                    setTimeout(() => playNote(73, 'triangle', 0.1, 0.2), 200); 
                 }
             }, 400);
         }
@@ -444,6 +451,48 @@
         function toggleAudio() {
             isMuted = !isMuted;
             document.getElementById('audio-toggle').innerText = isMuted ? "🔇 AUDIO: OFF" : "🔊 AUDIO: ON";
+        }
+
+        // --- PDF EXPORT ---
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(22);
+            doc.text("Vocabulary Chase - Performance Report", 20, 20);
+            
+            doc.setFontSize(12);
+            doc.text(`Student Mastery Analysis`, 20, 35);
+            doc.text(`Record Highscore: ${highscore}`, 20, 45);
+            doc.text(`Terms Encountered: ${usedIds.length} / ${vocabularyDB.length}`, 20, 52);
+            
+            doc.setDrawColor(200, 200, 200);
+            doc.line(20, 60, 190, 60);
+            
+            doc.setFontSize(14);
+            doc.text("Personal Learning Notes (Mistakes):", 20, 70);
+            
+            let y = 80;
+            if (mistakeLog.length === 0) {
+                doc.setFontSize(11);
+                doc.text("No mistakes recorded. Perfect session!", 20, y);
+            } else {
+                mistakeLog.forEach((item, index) => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.setFontSize(10);
+                    doc.setTextColor(180, 0, 0);
+                    doc.text(`Mistake #${index + 1}`, 20, y);
+                    doc.setTextColor(0, 0, 0);
+                    const splitQ = doc.splitTextToSize(`Question/Word: ${item.question}`, 160);
+                    doc.text(splitQ, 25, y + 6);
+                    y += (splitQ.length * 5) + 6;
+                    const splitA = doc.splitTextToSize(`Correct: ${item.correct}`, 160);
+                    doc.text(splitA, 25, y);
+                    y += (splitA.length * 5) + 10;
+                });
+            }
+            
+            doc.save("Vocabulary_Chase_Learning_Notes.pdf");
         }
 
         init();
