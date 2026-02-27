@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis: Five Little Indians by Michelle Good</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 2500px;
+            transition: max-height 0.5s ease-in;
+        }
+
+        .accordion-item.active .chevron {
+            transform: rotate(180deg);
+        }
+
+        .prose strong {
+            color: #0f172a;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-section, #print-section * {
+                visibility: visible;
+            }
+            #print-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 40px;
+            }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header Section -->
+        <header class="mb-10 border-b border-slate-200 pb-8 text-center md:text-left">
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Literary Analysis: <span class="text-blue-700 italic">Five Little Indians</span></h1>
+            <h2 class="text-xl font-semibold text-slate-500 mb-6">Michelle Good — Focus on Kenny’s Narrative</h2>
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 text-slate-700 text-sm italic">
+                This analysis explores an excerpt from Michelle Good's award-winning novel, focusing on the character Kenny and the intergenerational trauma caused by the Canadian Residential School system.
+            </div>
+        </header>
+
+        <!-- Main Content (Accordions) -->
+        <div class="space-y-6" id="accordion-container">
+            
+            <!-- Section A -->
+            <div class="accordion-item bg-white border border-slate-200 rounded-2xl shadow-sm transition-shadow hover:shadow-md">
+                <button onclick="toggleAccordion(this)" class="w-full flex justify-between items-center p-6 text-left focus:outline-none">
+                    <span class="font-bold text-xl text-slate-800">a) Narrative Perspective and Text Structure</span>
+                    <svg class="chevron w-6 h-6 text-slate-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content">
+                    <div class="p-8 border-t border-slate-100 bg-slate-50/30">
+                        <div class="prose prose-slate max-w-none space-y-4">
+                            <p>Good utilizes a <strong>third-person limited omniscient narrator</strong> centered on Kenny. This focalization is crucial as it invites the reader into Kenny's immediate sensory and psychological experience without the detachment of an objective observer.</p>
+                            <ul class="list-disc pl-5 space-y-3 text-slate-700">
+                                <li><strong>Experiential Learning:</strong> The reader is placed in a position of "discovery," learning about the atrocities of the schools as Kenny processes them or recounts them to his uncle.</li>
+                                <li><strong>Gradual Revelation:</strong> The structure does not reveal Kenny's past immediately. Instead, his trauma is unpacked through physical symptoms (bruises) and behavioral cues (panic), creating a cumulative emotional impact.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section B -->
+            <div class="accordion-item bg-white border border-slate-200 rounded-2xl shadow-sm transition-shadow hover:shadow-md">
+                <button onclick="toggleAccordion(this)" class="w-full flex justify-between items-center p-6 text-left focus:outline-none">
+                    <span class="font-bold text-xl text-slate-800">b) Characterization: Kenny & Clifford</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="p-8 border-t border-slate-100 bg-slate-50/30">
+                        <div class="grid md:grid-cols-2 gap-12">
+                            <!-- Kenny Analysis -->
+                            <div class="space-y-6">
+                                <h3 class="font-black text-sm uppercase tracking-widest text-blue-600">Protagonist: Kenny</h3>
+                                <div class="space-y-4 text-slate-700">
+                                    <p><strong>Direct Attributes:</strong> A 13-year-old boy physically marked by the "Mission." His bruises are external manifestations of internal trauma.</p>
+                                    <p><strong>Psychological Fragility:</strong> Good uses somatic markers—a "pounding heart" and sudden "sobbing"—to illustrate PTSD. His panic when Clifford mentions taking him back (ll. 62-63) reflects a primitive survival instinct.</p>
+                                    <p><strong>Performative Strength:</strong> To survive, Kenny adopts a facade of maturity, claiming to be sixteen (ll. 8-9). This "resourcefulness" is a survival strategy learned in an environment where childhood was forbidden.</p>
+                                </div>
+                            </div>
+                            <!-- Clifford Analysis -->
+                            <div class="space-y-6">
+                                <h3 class="font-black text-sm uppercase tracking-widest text-blue-600">The Relative: Uncle Clifford</h3>
+                                <div class="space-y-4 text-slate-700">
+                                    <p><strong>Initial Resistance:</strong> Clifford is characterized by his "firm steps" and initial focus on work, reflecting the harsh reality of living under colonial surveillance where harboring an escapee is a criminal risk (ll. 59-60).</p>
+                                    <p><strong>The Shift to Empathy:</strong> His character arc within the excerpt moves from pragmatic self-preservation to ancestral protection. The act of wrapping a shirt around Kenny’s shoulders (l. 67) signifies a reclamation of family bonds over institutional control.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section C -->
+            <div class="accordion-item bg-white border border-slate-200 rounded-2xl shadow-sm transition-shadow hover:shadow-md">
+                <button onclick="toggleAccordion(this)" class="w-full flex justify-between items-center p-6 text-left focus:outline-none">
+                    <span class="font-bold text-xl text-slate-800">c) Thematic Illustration of the Residential School Legacy</span>
+                </button>
+                <div class="accordion-content">
+                    <div class="p-8 border-t border-slate-100 bg-slate-50/30">
+                        <div class="prose prose-slate max-w-none">
+                            <p class="mb-4">The text serves as a literary indictment of the Canadian Residential School system. Michelle Good highlights several critical socio-political dimensions:</p>
+                            <ul class="list-disc pl-5 space-y-4 text-slate-700">
+                                <li><strong>Dehumanization:</strong> The bruises act as evidence of a system that viewed Indigenous children as objects of "correction" rather than human beings.</li>
+                                <li><strong>Isolation as a Weapon:</strong> The interception of letters (l. 82) illustrates the intentional severance of the "child-parent" bond to erode Indigenous culture and identity.</li>
+                                <li><strong>Transgenerational Trauma:</strong> The fear displayed by both the child (Kenny) and the adult (Clifford) shows that the entire community lived under a cloud of state-sanctioned terror.</li>
+                            </ul>
+                            <div class="mt-6 p-4 bg-slate-100 rounded-xl border border-slate-200 font-medium text-slate-800">
+                                "These elements combine to convey the message very successfully and authentically, marking the transition from individual suffering to a collective call for justice."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer Section (Academic Note) -->
+        <footer class="mt-16 pt-8 border-t border-slate-200 text-slate-400 text-sm text-center">
+            <p>© Literary Analysis Portal — Advanced English Studies</p>
+            <p class="mt-2">Based on the novel <cite>Five Little Indians</cite> by Michelle Good.</p>
+        </footer>
+    </div>
+
+    <!-- Hidden Print Section -->
+    <div id="print-section" class="hidden">
+        <h1 style="font-size: 20pt; font-weight: bold; margin-bottom: 20px;">Analysis: Five Little Indians</h1>
+        <p style="margin-bottom: 20px;">Michelle Good — Kenny's Narrative Analysis</p>
+        <div style="border: 1px solid #ccc; padding: 20px;">
+            <p>This document contains the core analysis of the narrative perspective, characterization, and historical themes explored in the text.</p>
+        </div>
+    </div>
+
+    <!-- Static Print Button -->
+    <button onclick="window.print()" class="fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-slate-800 transition-all flex items-center gap-2 no-print">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+        Export PDF
+    </button>
+
+    <script>
+        function toggleAccordion(button) {
+            const item = button.parentElement;
+            document.querySelectorAll('.accordion-item').forEach(i => {
+                if (i !== item) i.classList.remove('active');
+            });
+            item.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
